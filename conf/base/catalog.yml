@@ -3,7 +3,23 @@
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
 
-RAW_GOOG:
+RAW_GOOG_ADX:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_ADX.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_BB:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_BB_20_STD_2.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_EMA_5:
   type: pandas.CSVDataSet
   filepath: data/01_raw/GOOG_1D_EMA_5.csv
   load_args:
@@ -11,6 +27,98 @@ RAW_GOOG:
   save_args:
     date_format: '%Y-%m-%d'
 
-GOOG:
+RAW_GOOG_EMA_35:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_EMA_35.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_MACD:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_MACD.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_OBV:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_OBV_VOLUME.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_RSI:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_RSI_14_SMA.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_SAR:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_SAR.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_STOCH:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_STOCH_RSI.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+RAW_GOOG_WR:
+  type: pandas.CSVDataSet
+  filepath: data/01_raw/GOOG_1D_WR.csv
+  load_args:
+    sep: ','
+  save_args:
+    date_format: '%Y-%m-%d'
+
+GOOG_ADX:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_ADX.pq
+
+GOOG_BB:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_BB_20_STD_2.pq
+
+GOOG_EMA_5:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_EMA_5.pq
+
+GOOG_EMA_35:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_EMA_35.pq
+
+GOOG_MACD:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_MACD.pq
+
+GOOG_OBV:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_OBV_VOLUME.pq
+
+GOOG_RSI:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_RSI_14_SMA.pq
+
+GOOG_SAR:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_SAR.pq
+
+GOOG_STOCH:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_STOCH_RSI.pq
+
+GOOG_WR:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/GOOG_1D_WR.pq
