@@ -1,9 +1,6 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import numpy as np
 import pandas as pd
-
-
 
 def plot_1_line(x: pd.Series(),y : pd.Series() ,title):
     fig = make_subplots(rows=1, cols=1)
@@ -32,7 +29,6 @@ def plot_1_line(x: pd.Series(),y : pd.Series() ,title):
     )
     fig.update_layout(layout)
     fig.show()
-
 
 
 def plot_2_line(x: pd.Series(),y1 : pd.Series() , y2 :pd.Series(), name_y1 , name_y2, title):
