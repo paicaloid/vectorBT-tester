@@ -6,3 +6,5 @@ ipython
 pandas
 kedro-viz
 pyarrow
+ipykernel
+jupyter
