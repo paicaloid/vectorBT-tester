@@ -11,5 +11,5 @@ import pandas as pd
 
 from .nodes import * # your node functions
 
-def set_dataframe_index(df: pd.DataFrame, index_name: str):
+def set_dataframe_index(df: pd.DataFrame, index_name: str) -> pd.DataFrame:
 	return df.set_index(index_name)
