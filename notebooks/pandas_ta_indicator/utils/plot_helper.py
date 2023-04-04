@@ -100,7 +100,7 @@ def plot_3_line(x: pd.Series(),y1 : pd.Series() , y2 :pd.Series(), y3: pd.Series
         go.Scatter(
             x=x,
             y=y3,
-            line=dict(color='blue', width=1),
+            line=dict(color='green', width=1),
             name=name_y3,
             legendgroup='1',
         ), row=1, col=1
