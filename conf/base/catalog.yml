@@ -155,3 +155,18 @@ GOOG_MERGE_DATA:
   type: pandas.ParquetDataSet
   filepath: data/03_primary/ASSET_MERGE_DATA.pq
   layer: primary
+
+# Plot on kedro viz
+GOOG_PLOT:
+  type: plotly.PlotlyDataSet
+  filepath: data/03_primary/ASSET_MERGE_DATA.json
+  plotly_args:
+    type: line
+    fig:
+      x: time
+      y: close_GOOG_1D_ADX
+      orientation: h
+    layout:
+      xaxis_title: datetime
+      yaxis_title: close GOOG_1D_ADX
+      title: Close Price 

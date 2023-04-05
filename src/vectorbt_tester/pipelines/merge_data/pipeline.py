@@ -28,6 +28,10 @@ def partition_data(partitions: DataCatalog, index_name: str) -> ParquetDataSet:
             df = df.merge(data, how='outer', on='time')
     return set_dataframe_index(df, index_name)
 
+def plot_df(df: pd.DataFrame):
+    df = df.reset_index() # to set index column 'time' as a normal column 
+    return df
+
 def create_pipeline(**kwargs) -> Pipeline:
     pipeline = Pipeline(
         [
@@ -36,6 +40,11 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs=['RAW_GOOG_DATASET', 'params:index_name'],
                 outputs='GOOG_MERGE_DATA',
                 name='partition_data_node',
+            ),
+            node(
+                func=plot_df,
+                inputs="GOOG_MERGE_DATA",
+                outputs="GOOG_PLOT",
             ),
         ]
     )

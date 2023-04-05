@@ -10,13 +10,15 @@ conf/local/**
 conf/**/*credentials*
 
 # ignore everything in the following folders
-data/**/*.csv
-data/**/*.pq
+data/**/**
 logs/**
 
 # except their sub-folders
 !data/**/
 !logs/**/
+
+# except .dvc files
+!data/**/*.dvc
 
 # also keep all .gitkeep files
 !.gitkeep
