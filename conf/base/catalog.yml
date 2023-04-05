@@ -10,6 +10,7 @@ RAW_GOOG_ADX:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_BB:
   type: pandas.CSVDataSet
@@ -18,6 +19,7 @@ RAW_GOOG_BB:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_EMA_5:
   type: pandas.CSVDataSet
@@ -26,6 +28,7 @@ RAW_GOOG_EMA_5:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_EMA_35:
   type: pandas.CSVDataSet
@@ -34,6 +37,7 @@ RAW_GOOG_EMA_35:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_MACD:
   type: pandas.CSVDataSet
@@ -42,6 +46,7 @@ RAW_GOOG_MACD:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_OBV:
   type: pandas.CSVDataSet
@@ -50,6 +55,7 @@ RAW_GOOG_OBV:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_RSI:
   type: pandas.CSVDataSet
@@ -58,6 +64,7 @@ RAW_GOOG_RSI:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_SAR:
   type: pandas.CSVDataSet
@@ -66,6 +73,7 @@ RAW_GOOG_SAR:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_STOCH:
   type: pandas.CSVDataSet
@@ -74,6 +82,7 @@ RAW_GOOG_STOCH:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 RAW_GOOG_WR:
   type: pandas.CSVDataSet
@@ -82,46 +91,57 @@ RAW_GOOG_WR:
     sep: ','
   save_args:
     date_format: '%Y-%m-%d'
+  layer: raw
 
 GOOG_ADX:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_ADX.pq
+  layer: intermediate
 
 GOOG_BB:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_BB_20_STD_2.pq
+  layer: intermediate
 
 GOOG_EMA_5:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_EMA_5.pq
+  layer: intermediate
 
 GOOG_EMA_35:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_EMA_35.pq
+  layer: intermediate
 
 GOOG_MACD:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_MACD.pq
+  layer: intermediate
 
 GOOG_OBV:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_OBV_VOLUME.pq
+  layer: intermediate
 
 GOOG_RSI:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_RSI_14_SMA.pq
+  layer: intermediate
 
 GOOG_SAR:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_SAR.pq
+  layer: intermediate
 
 GOOG_STOCH:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_STOCH_RSI.pq
+  layer: intermediate
 
 GOOG_WR:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_WR.pq
+  layer: intermediate
 
 RAW_GOOG_DATASET:
   type: PartitionedDataSet
@@ -129,7 +149,9 @@ RAW_GOOG_DATASET:
   dataset: 
     type: pandas.CSVDataSet
   filename_suffix: '.csv'
+  layer: raw
 
 GOOG_MERGE_DATA:
   type: pandas.ParquetDataSet
-  filepath: data/02_intermediate/ASSET_MERGE_DATA.pq
+  filepath: data/03_primary/ASSET_MERGE_DATA.pq
+  layer: primary
