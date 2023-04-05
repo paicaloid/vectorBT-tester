@@ -170,3 +170,4 @@ GOOG_PLOT:
       xaxis_title: datetime
       yaxis_title: close GOOG_1D_ADX
       title: Close Price 
+  layer: visualize

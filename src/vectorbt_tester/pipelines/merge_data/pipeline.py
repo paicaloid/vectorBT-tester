@@ -43,8 +43,9 @@ def create_pipeline(**kwargs) -> Pipeline:
             ),
             node(
                 func=plot_df,
-                inputs="GOOG_MERGE_DATA",
-                outputs="GOOG_PLOT",
+                inputs='GOOG_MERGE_DATA',
+                outputs='GOOG_PLOT',
+                name='plot_node'
             ),
         ]
     )
