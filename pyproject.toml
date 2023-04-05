@@ -1,7 +1,7 @@
 [tool.kedro]
 package_name = "vectorbt_tester"
 project_name = "vectorBT-tester"
-kedro_init_version = "0.18.7"
+project_version = "0.18.4"
 
 [tool.isort]
 profile = "black"

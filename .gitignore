@@ -11,6 +11,7 @@ conf/**/*credentials*
 
 # ignore everything in the following folders
 data/**/*.csv
+data/**/*.pq
 logs/**
 
 # except their sub-folders
@@ -157,3 +158,5 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+mlruns/*

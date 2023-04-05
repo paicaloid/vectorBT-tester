@@ -122,3 +122,14 @@ GOOG_STOCH:
 GOOG_WR:
   type: pandas.ParquetDataSet
   filepath: data/02_intermediate/GOOG_1D_WR.pq
+
+RAW_GOOG_DATASET:
+  type: PartitionedDataSet
+  path: data/01_raw
+  dataset: 
+    type: pandas.CSVDataSet
+  filename_suffix: '.csv'
+
+GOOG_MERGE_DATA:
+  type: pandas.ParquetDataSet
+  filepath: data/02_intermediate/ASSET_MERGE_DATA.pq
