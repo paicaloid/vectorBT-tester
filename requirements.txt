@@ -8,3 +8,5 @@ kedro-viz
 pyarrow
 ipykernel
 jupyter
+# vectorbt
+pandas_ta
