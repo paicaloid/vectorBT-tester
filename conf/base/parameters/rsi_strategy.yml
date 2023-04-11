@@ -4,8 +4,8 @@
 # Documentation for this file format can be found in "Parameters"
 # Link: https://kedro.readthedocs.io/en/0.18.4/kedro_project_setup/configuration.html#parameters
 
-price_type: "close"
-asset: "GOOG_1D_ADX"
+# price_type: "close"
+# asset: "GOOG_1D_ADX"
 length: 14
 over_bought: 70
 over_sold: 30

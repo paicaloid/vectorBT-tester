@@ -1,4 +1,4 @@
-# Pipeline ema_strategy
+# Pipeline ma_strategy
 
 > *Note:* This is a `README.md` boilerplate generated using `Kedro 0.18.4`.
 

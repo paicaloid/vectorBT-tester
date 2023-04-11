@@ -1,5 +1,5 @@
 """
-This is a boilerplate test file for pipeline 'ema_strategy'
+This is a boilerplate test file for pipeline 'ma_strategy'
 generated using Kedro 0.18.4.
 Please add your pipeline tests here.
 

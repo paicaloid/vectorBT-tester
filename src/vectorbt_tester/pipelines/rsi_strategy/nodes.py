@@ -22,10 +22,6 @@ def select_asset(df: pd.DataFrame, asset: str) -> pd.Series:
     asset_df = asset_df.rename(columns=col_map)
     return asset_df
 
-def compute_rsi(data: pd.Series, length: int) -> pd.DataFrame:
-    rsi = vbt.RSI.run(data, window=length)
-    return rsi, vbt_show(rsi)
-
 def prepare_series(df: pd.DataFrame,  price_type: str) -> pd.Series:
     # df = set_dataframe_index(df, index_name)
     df = df[price_type]
@@ -34,7 +30,11 @@ def prepare_series(df: pd.DataFrame,  price_type: str) -> pd.Series:
 def vbt_show(data: vbt.indicators.basic.RSI or vbt.portfolio.base.Portfolio) -> vbt.utils.figure.FigureWidget:
     return data.plot()
 
-def strategy(rsi: vbt.indicators.basic.RSI, price_df: pd.DataFrame, over_bought: int, over_sold: int):
+def compute_rsi(data: pd.Series, length: int) -> [vbt.indicators.basic.RSI, vbt.utils.figure.FigureWidget]:
+    rsi = vbt.RSI.run(data, window=length)
+    return rsi, vbt_show(rsi)
+
+def strategy(rsi: vbt.indicators.basic.RSI, price_df: pd.DataFrame, over_bought: int, over_sold: int) -> [vbt.portfolio.base.Portfolio, vbt.utils.figure.FigureWidget]:
     open = price_df['open']
     close = price_df['close']
     hight = price_df['hight']

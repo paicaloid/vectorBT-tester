@@ -10,7 +10,7 @@ import pandas as pd
 import re
 import vectorbt as vbt
 
-from .nodes import select_asset, prepare_series, compute_rsi, vbt_show, strategy # custom node functions
+from .nodes import select_asset, prepare_series, vbt_show, compute_rsi, strategy # custom node functions
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
