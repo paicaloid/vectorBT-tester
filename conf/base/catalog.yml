@@ -171,3 +171,14 @@ GOOG_PLOT:
       yaxis_title: close GOOG_1D_ADX
       title: Close Price 
   layer: visualize
+
+# Plot on kedro viz
+RSI_PLOT:
+  type: plotly.JSONDataSet
+  filepath: data/04_feature/RSI_PLOT.json
+  layer: visualize
+
+PORTFOLIO_RSI_PLOT:
+  type: plotly.JSONDataSet
+  filepath: data/07_model_output/PORTFOLIO_RSI_PLOT.json
+  layer: visualize
