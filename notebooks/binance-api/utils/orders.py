@@ -1,6 +1,7 @@
 import json
 
 from ws import ThreadClient
+from adx import ADX
 
 class TradingOrder:
     
@@ -10,7 +11,41 @@ class TradingOrder:
 
 class Strategy:
     
-    def __init__(self) -> None:
+    def __init__(self, period: int = 14, adx_level: int = 25) -> None:
+        self.adx = None
+        self.plusDI = None
+        self.minusDI = None
+        self.period = period
+        self.adx_level = adx_level
+        
+        self.buy_condition = False
+        self.short_condition = False
+        self.close_long_condition = False
+        self.close_short_condition = False
+        
+        self.position = 0
+    
+    def compute_signals(
+        self,
+        open_price: pd.Series,
+        high_price: pd.Series,
+        low_price: pd.Series,
+    ) -> None:
+        self.adx, self.plusDI, self.minusDI = ADX(
+            high=high_price,
+            low=low_price,
+            close=open_price,
+            period=self.period,
+        )
+        
+        self.buy_condition = (self.plusDI > self.minusDI) & (self.plusDI >= self.adx_level) 
+        self.close_long_condition = (self.plusDI < self.minusDI) & (self.plusDI < self.adx_level)
+        
+        self.short_condition = (self.minusDI > self.plusDI) & (self.minusDI >= self.adx_level)
+        self.close_short_condition = (self.minusDI < self.plusDI) & (self.minusDI < self.adx_level)
+
+    
+    def calculate_order(self):
         pass
     
 
