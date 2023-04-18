@@ -3,6 +3,15 @@ import json
 from ws import ThreadClient
 from adx import ADX
 
+import asyncio
+import websockets
+import pytz
+import pandas as pd
+from datetime import datetime, timedelta
+import vectorbtpro as vbt
+import sqlalchemy
+
+
 class TradingOrder:
     
     def __init__(self) -> None:
@@ -18,12 +27,13 @@ class Strategy:
         self.period = period
         self.adx_level = adx_level
         
-        self.buy_condition = False
+        self.long_condition = False
         self.short_condition = False
         self.close_long_condition = False
         self.close_short_condition = False
         
         self.position = 0
+        self.orders = []
     
     def compute_signals(
         self,
@@ -31,23 +41,65 @@ class Strategy:
         high_price: pd.Series,
         low_price: pd.Series,
     ) -> None:
-        self.adx, self.plusDI, self.minusDI = ADX(
+        adx, plusDI, minusDI = ADX(
             high=high_price,
             low=low_price,
             close=open_price,
             period=self.period,
         )
         
-        self.buy_condition = (self.plusDI > self.minusDI) & (self.plusDI >= self.adx_level) 
+        self.adx = adx.iloc[-1]
+        self.plusDI = plusDI.iloc[-1]
+        self.minusDI = minusDI.iloc[-1]
+        
+        self.long_condition = (self.plusDI > self.minusDI) & (self.plusDI >= self.adx_level) 
         self.close_long_condition = (self.plusDI < self.minusDI) & (self.plusDI < self.adx_level)
         
         self.short_condition = (self.minusDI > self.plusDI) & (self.minusDI >= self.adx_level)
         self.close_short_condition = (self.minusDI < self.plusDI) & (self.minusDI < self.adx_level)
 
+    def create_order_info(self, type: str, signal: str) -> dict:
+        cur_date = datetime.now(tz=pytz.timezone("Asia/Bangkok")).replace(second=0, microsecond=0)
+        order_info = {
+            "Signal Date": cur_date,
+            "plusDI": self.plusDI,
+            "minusDI": self.minusDI,
+            "ADX": self.adx,
+            "Type": type,
+            "Signal": signal,
+        }
+        return order_info
+    
+    def place_order(
+        self
+        df: pd.DataFrame,
+    ):
+        if self.orders:
+            order_detail = self.orders.pop(0)
+            order_detail["Place_date"] = date
+            order_detail["Price"] = close_price
+            
+            self.list_of_orders.append(order_detail)
+            
+            if order_detail["Type"] == "Entry Long":
+                print("Buy")
+            elif order_detail["Type"] == "Exit Long":
+                print("Sell")
     
     def calculate_order(self):
-        pass
-    
+        cur_date = datetime.now(tz=pytz.timezone("Asia/Bangkok")).replace(second=0, microsecond=0)
+        order_info = {}
+        if self.long_condition and self.position == 0:
+            order_info = self.create_order_info(type="Entry Long", signal="Buy")
+        if self.close_long_condition and self.position > 0:
+            order_info = self.create_order_info(type="Exit Long", signal="Sell")
+        if self.short_condition and self.position == 0:
+            order_info = self.create_order_info(type="Entry Short", signal="Sell")
+        if self.close_short_condition and self.position < 0:
+            order_info = self.create_order_info(type="Exit Short", signal="Buy")
+            
+        if order_info:
+            self.orders.append(order_info)
 
 class StreamingCandlesticks(ThreadClient):
     
@@ -66,13 +118,6 @@ class StreamingTickers:
         
 
 
-import asyncio
-import websockets
-import pytz
-import pandas as pd
-from datetime import datetime, timedelta
-import vectorbtpro as vbt
-import sqlalchemy
 
 engine = sqlalchemy.create_engine('sqlite:///btcusdtStream.db')
 
@@ -94,9 +139,11 @@ class BinanceWebsocketHandler:
         self.connections = []
         self.connections.append(f'wss://stream.binance.com:9443/ws/{self.symbol}@kline_{interval}')
         if trade:
-            self.connections.append(f'wss://stream.binance.com:9443/ws/{self.symbol}@trade')
-        
+            # self.connections.append(f'wss://stream.binance.com:9443/ws/{self.symbol}@trade')
+            self.connections.append(f'wss://stream.binance.com:9443/ws/{self.symbol}@kline_1s')
+            
         self.get_historical_data()
+        self.indicators = Strategy()
         
     def get_historical_data(self) -> None:
         print("Preparing data...")
@@ -116,7 +163,7 @@ class BinanceWebsocketHandler:
         if self.sql:
             self.data.to_sql('btcusdt', engine, if_exists='append')
     
-    def msg_to_dataframe(self, info: dict) -> pd.DataFrame:
+    def msg_to_dataframe(self, info: dict, interval: str) -> pd.DataFrame:
         
         cur_datetime = datetime.fromtimestamp(info['t']/1000, tz=self.tz)
         df = pd.DataFrame([info])
@@ -139,7 +186,7 @@ class BinanceWebsocketHandler:
         df = df.set_index('Datetime')
         
         if self.sql:
-            df.to_sql('btcusdt', engine, if_exists='append')
+            df.to_sql(f'btcusdt_{interval}', engine, if_exists='append')
             
         return df
     
@@ -148,27 +195,35 @@ class BinanceWebsocketHandler:
         self.data = self.data[-self.bar_range:]
         print(self.data)
     
-    async def handle_kline_message(self, message) -> None:
+    async def handle_kline_1m_message(self, message) -> None:
         msg = json.loads(message)
         # ref https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md#klinecandlestick-streams
         bar = msg['k']
         is_close = bar['x']
         
         if is_close:
+            # Place order if possible
+            
+            
+            
             print('Update...')
-            df = self.msg_to_dataframe(info=bar)
+            df = self.msg_to_dataframe(info=bar, interval="1m")
             self.update_dataframe(lastest_df=df)
 
-
-    async def handle_trade_message(self, message):
-        print(f'Trade message received')
-
+    async def handle_kline_1s_message(self, message):
+        # print(f'Trade message received')
+        msg = json.loads(message)
+        bar = msg['k']
+        is_close = bar['x']
+        if is_close:
+            df = self.msg_to_dataframe(info=bar, interval="1m")
+        
     async def handle_socket(self, uri):
         async with websockets.connect(uri) as websocket:
-            if 'kline' in uri:
-                handle_message = self.handle_kline_message
-            elif 'trade' in uri:
-                handle_message = self.handle_trade_message
+            if 'kline_1m' in uri:
+                handle_message = self.handle_kline_1m_message
+            elif 'kline_1s' in uri:
+                handle_message = self.handle_kline_1s_message
             async for message in websocket:
                 await handle_message(message)
 
