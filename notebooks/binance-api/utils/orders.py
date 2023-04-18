@@ -107,30 +107,23 @@ class BinanceWebsocketHandler:
             df.to_sql('btcusdt', engine, if_exists='append')
             
         return df
-            
-    async def handle_kline_message(self, message):
+    
+    def update_dataframe(self, lastest_df: pd.DataFrame) -> None:
+        self.data = pd.concat([self.data, lastest_df])
+        self.data = self.data[-self.bar_range:]
+        print(self.data)
+    
+    async def handle_kline_message(self, message) -> None:
         msg = json.loads(message)
+        # ref https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md#klinecandlestick-streams
         bar = msg['k']
-        
         is_close = bar['x']
         
         if is_close:
             print('Update...')
-            self.msg_to_dataframe(info=bar)
-        # else:
-        #     s_time = datetime.fromtimestamp(bar['t']/1000, tz=self.tz)
-        #     c_time = datetime.fromtimestamp(bar['T']/1000, tz=self.tz)
-        #     print(f'Kline message received: {s_time} - {c_time}')
-        # if self._first:
-            # df = pd.DataFrame([bar])
-            # print(df)
-            # self.msg_to_dataframe(info=bar)
-            # self._first = False
-        # else:
-        # cur_datetime = datetime.fromtimestamp(bar['t']/1000, tz=self.tz)
-            # is_closed = bar['x']  
-            # print(is_closed)
-        # print(f'Kline message received: {cur_datetime} - {is_closed}')
+            df = self.msg_to_dataframe(info=bar)
+            self.update_dataframe(lastest_df=df)
+
 
     async def handle_trade_message(self, message):
         print(f'Trade message received')
