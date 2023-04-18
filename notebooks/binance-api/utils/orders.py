@@ -29,15 +29,7 @@ class StreamingTickers:
         msg = json.loads(message)
         print(msg)
         
-symbol = 'btcusdt'
-socket = f'wss://stream.binance.com:9443/ws/{symbol}@kline_1m'
 
-# ws_binance = StreamingCandlesticks(
-#     url=socket,
-#     exchange='Binance'
-# )
-
-# ws_binance.start()
 
 import asyncio
 import websockets
@@ -55,12 +47,14 @@ class BinanceWebsocketHandler:
         symbol: str = "btcusdt", 
         interval: str = "1m", 
         trade: bool = True,
-        bar_range: int = 250
+        bar_range: int = 250,
+        sql: bool = True
     ) -> None:
         
         self.symbol = symbol
         self.tz = pytz.timezone('Asia/Bangkok')
         self.bar_range = bar_range
+        self.sql = sql
         
         self.connections = []
         self.connections.append(f'wss://stream.binance.com:9443/ws/{self.symbol}@kline_{interval}')
@@ -69,10 +63,6 @@ class BinanceWebsocketHandler:
         
         self.get_historical_data()
         
-        self._first = True
-        
-            
-    
     def get_historical_data(self) -> None:
         print("Preparing data...")
         date_now = datetime.now(tz=self.tz).replace(second=0, microsecond=0)
@@ -87,24 +77,13 @@ class BinanceWebsocketHandler:
         )
         self.data = data.data[self.symbol.upper()]
         self.data.index = self.data.index.rename('Datetime')
-        # print(self.data.iloc[:-1])
-        print(self.data)
-        # self.data.to_sql('btcusdt', engine, if_exists='append')
+
+        if self.sql:
+            self.data.to_sql('btcusdt', engine, if_exists='append')
     
     def msg_to_dataframe(self, info: dict) -> pd.DataFrame:
-        # close_time = info['T']
-        # open_price = info['o']
-        # close_price = info['c']
-        # high_price = info['h']
-        # low_price = info['l']
-        # volume = info['v']
-        # quote_volume = info['q']
-        # trade_count = info['n']
-        # taker_base_volume = info['V']
-        # taker_base_quote_volume = info['Q']
+        
         cur_datetime = datetime.fromtimestamp(info['t']/1000, tz=self.tz)
-        # cur_datetime = cur_datetime.strftime('%Y-%m-%d %H:%M:%S%z')
-
         df = pd.DataFrame([info])
         df = df.drop(['T','t', 's', 'i', 'f', 'L', 'x', 'B'], axis=1)
         df = df.rename(columns={
@@ -120,15 +99,15 @@ class BinanceWebsocketHandler:
         })
         df = df.astype(float)
         df["Trade count"] = df["Trade count"].astype(int)
-        # df['Datetime'] = pd.to_datetime(df['Datetime'], unit='s', utc=True).dt.tz_convert('Asia/Bangkok')
-        # df['Datetime'] = pd.to_datetime(df['Datetime'].apply(datetime.fromtimestamp))
-        # df['Datetime'] = df['Datetime'].dt.tz_localize('UTC').dt.tz_convert('Asia/Bangkok')
+
         df['Datetime'] = cur_datetime
         df = df.set_index('Datetime')
-        # df.to_sql('btcusdt', engine, if_exists='append')
-        # print(df)
+        
+        if self.sql:
+            df.to_sql('btcusdt', engine, if_exists='append')
             
-    
+        return df
+            
     async def handle_kline_message(self, message):
         msg = json.loads(message)
         bar = msg['k']
@@ -173,6 +152,7 @@ if __name__ == '__main__':
         symbol='btcusdt',
         interval='1m',
         trade=False,
-        bar_range=5
+        bar_range=5,
+        sql=False
     )
     asyncio.get_event_loop().run_until_complete(handler.run())
