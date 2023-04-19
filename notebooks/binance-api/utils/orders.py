@@ -12,10 +12,13 @@ import vectorbtpro as vbt
 import sqlalchemy
 
 
-class TradingOrder:
+class Portfolio:
     
-    def __init__(self) -> None:
-        pass
+    def __init__(self, cash: float = 1000.0) -> None:
+        self.cash = cash
+        self.position = 0
+        self.orders = []
+        self.list_of_orders = []
     
 
 class Strategy:
@@ -52,14 +55,34 @@ class Strategy:
         self.plusDI = plusDI.iloc[-1]
         self.minusDI = minusDI.iloc[-1]
         
+        print("plusDI: ", self.plusDI)
+        print("minusDI: ", self.minusDI)
+        print("ADX: ", self.adx)
+        print("------------------")
+        
         self.long_condition = (self.plusDI > self.minusDI) & (self.plusDI >= self.adx_level) 
         self.close_long_condition = (self.plusDI < self.minusDI) & (self.plusDI < self.adx_level)
         
         self.short_condition = (self.minusDI > self.plusDI) & (self.minusDI >= self.adx_level)
         self.close_short_condition = (self.minusDI < self.plusDI) & (self.minusDI < self.adx_level)
+        
+        order_info = {}
+        if self.long_condition and self.position == 0:
+            print("Entry Long")
+            self.position = 1
+        if self.close_long_condition and self.position > 0:
+            print("Exit Long")
+            self.position = 0
+        if self.short_condition and self.position == 0:
+            print("Entry Short")
+            self.position = -1
+        if self.close_short_condition and self.position < 0:
+            print("Exit Short")
+            self.position = 0
+        print("++++++++++++++++++++")
 
-    def create_order_info(self, type: str, signal: str) -> dict:
-        cur_date = datetime.now(tz=pytz.timezone("Asia/Bangkok")).replace(second=0, microsecond=0)
+    def create_order_info(self, type: str, signal: str, cur_date: datetime) -> dict:
+        # cur_date = datetime.now(tz=pytz.timezone("Asia/Bangkok")).replace(second=0, microsecond=0)
         order_info = {
             "Signal Date": cur_date,
             "plusDI": self.plusDI,
@@ -71,52 +94,37 @@ class Strategy:
         return order_info
     
     def place_order(
-        self
+        self,
         df: pd.DataFrame,
     ):
-        if self.orders:
-            order_detail = self.orders.pop(0)
-            order_detail["Place_date"] = date
-            order_detail["Price"] = close_price
+        # if self.orders:
+        #     order_detail = self.orders.pop(0)
+        #     order_detail["Place_date"] = date
+        #     order_detail["Price"] = close_price
             
-            self.list_of_orders.append(order_detail)
+        #     self.list_of_orders.append(order_detail)
             
-            if order_detail["Type"] == "Entry Long":
-                print("Buy")
-            elif order_detail["Type"] == "Exit Long":
-                print("Sell")
+        #     if order_detail["Type"] == "Entry Long":
+        #         print("Buy")
+        #     elif order_detail["Type"] == "Exit Long":
+        #         print("Sell")
+        pass
     
-    def calculate_order(self):
-        cur_date = datetime.now(tz=pytz.timezone("Asia/Bangkok")).replace(second=0, microsecond=0)
+    def calculate_order(self, cur_date: datetime):
+        # cur_date = datetime.now(tz=pytz.timezone("Asia/Bangkok")).replace(second=0, microsecond=0)
         order_info = {}
         if self.long_condition and self.position == 0:
-            order_info = self.create_order_info(type="Entry Long", signal="Buy")
+            order_info = self.create_order_info(type="Entry Long", signal="Buy", cur_date=cur_date)
         if self.close_long_condition and self.position > 0:
-            order_info = self.create_order_info(type="Exit Long", signal="Sell")
+            order_info = self.create_order_info(type="Exit Long", signal="Sell", cur_date=cur_date)
         if self.short_condition and self.position == 0:
-            order_info = self.create_order_info(type="Entry Short", signal="Sell")
+            order_info = self.create_order_info(type="Entry Short", signal="Sell", cur_date=cur_date)
         if self.close_short_condition and self.position < 0:
-            order_info = self.create_order_info(type="Exit Short", signal="Buy")
+            order_info = self.create_order_info(type="Exit Short", signal="Buy", cur_date=cur_date)
             
         if order_info:
+            print(order_info)
             self.orders.append(order_info)
-
-class StreamingCandlesticks(ThreadClient):
-    
-    def __init__(self, url, exchange) -> None:
-        super().__init__(url, exchange)
-        pass
-    
-class StreamingTickers:
-    
-    def __init__(self) -> None:
-        pass
-    
-    def on_message(self, ws, message):
-        msg = json.loads(message)
-        print(msg)
-        
-
 
 
 engine = sqlalchemy.create_engine('sqlite:///btcusdtStream.db')
@@ -143,7 +151,7 @@ class BinanceWebsocketHandler:
             self.connections.append(f'wss://stream.binance.com:9443/ws/{self.symbol}@kline_1s')
             
         self.get_historical_data()
-        self.indicators = Strategy()
+        self.indicators = Strategy(adx_level=20)
         
     def get_historical_data(self) -> None:
         print("Preparing data...")
@@ -193,7 +201,7 @@ class BinanceWebsocketHandler:
     def update_dataframe(self, lastest_df: pd.DataFrame) -> None:
         self.data = pd.concat([self.data, lastest_df])
         self.data = self.data[-self.bar_range:]
-        print(self.data)
+        # print(self.data)
     
     async def handle_kline_1m_message(self, message) -> None:
         msg = json.loads(message)
@@ -202,13 +210,24 @@ class BinanceWebsocketHandler:
         is_close = bar['x']
         
         if is_close:
-            # Place order if possible
+            cur_date = datetime.fromtimestamp(bar['t']/1000, tz=self.tz)
+            # Place orders if possible
             
             
-            
-            print('Update...')
+            # Update dataframe
+            # print('Update...')
             df = self.msg_to_dataframe(info=bar, interval="1m")
             self.update_dataframe(lastest_df=df)
+            
+            # Calculate indicators
+            self.indicators.compute_signals(
+                open_price=self.data['Open'],
+                high_price=self.data['High'],
+                low_price=self.data['Low'],
+            )
+            
+            # Create order for next bar
+            # self.indicators.calculate_order(cur_date=cur_date)
 
     async def handle_kline_1s_message(self, message):
         # print(f'Trade message received')
@@ -235,7 +254,7 @@ if __name__ == '__main__':
         symbol='btcusdt',
         interval='1m',
         trade=False,
-        bar_range=5,
+        bar_range=250,
         sql=False
     )
     asyncio.get_event_loop().run_until_complete(handler.run())
