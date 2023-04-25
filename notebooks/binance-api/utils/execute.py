@@ -1,7 +1,9 @@
 import pandas as pd
 
+from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, List
+from pydantic import BaseModel
+from typing import List
 
 from adx import ADX
 
@@ -20,12 +22,16 @@ class Portfoilo:
     def __init__(self, cash: float = 1000.0) -> None:
         self.cash = cash
         self.positions = 0
+        self.port_value = 0
         self.list_of_trade = pd.DataFrame(columns=["Date", "Type", "Signal", "Price", "Size", "Profit"])
         
 
 class ADX_Strategy(Portfoilo):
     
     def __init__(self, period: int = 14, adx_level: int = 25) -> None:
+        
+        super().__init__()
+        
         self.adx = None
         self.plusDI = None
         self.minusDI = None
@@ -45,7 +51,7 @@ class ADX_Strategy(Portfoilo):
         self.short_tp = 0
         self.short_sl = 0
         
-        self.orders = List[Order]
+        self.orders: List[Order] = []
         
         
     def compute_signals(
@@ -87,7 +93,8 @@ class ADX_Strategy(Portfoilo):
             if self.positions < 0:
                 self.orders.append(Order(order_type=OrderType.exit_short, signal="Exit Short"))
             elif self.positions > 0:
-                self.set_long_tp_sl()
+                # self.set_long_tp_sl()
+                pass
             else:
                 self.orders.append(Order(order_type=OrderType.entry_long, signal="Entry Long"))
         
@@ -99,7 +106,8 @@ class ADX_Strategy(Portfoilo):
             if self.positions > 0:
                 self.orders.append(Order(order_type=OrderType.exit_long, signal="Exit Long"))
             elif self.positions < 0:
-                self.set_short_tp_sl()
+                # self.set_short_tp_sl()
+                pass
             else:
                 self.orders.append(Order(order_type=OrderType.entry_short, signal="Entry Short"))
         
@@ -109,19 +117,44 @@ class ADX_Strategy(Portfoilo):
         
     def excute_order(
         self,
+        cur_date: datetime,
         open_price: float,
         high_price: float,
         low_price: float,
         close_price: float,
     ) -> None:
         
-        while self.ordes:
+        while self.orders:
             order = self.orders.pop(0)
+            # print(f"{cur_date}     {order.signal:<10}")
             if order.order_type == OrderType.entry_long:
-                print()
+                self.positions = 1
+                print(f"{cur_date}     {order.signal:<10}")
+                self.port_value = open_price
             elif order.order_type == OrderType.entry_short:
-                self.open_short()
+                self.positions = -1
+                print(f"{cur_date}     {order.signal:<10}")
+                self.port_value = open_price
             elif order.order_type == OrderType.exit_long:
-                self.close_long()
+                self.positions = 0
+                profit = (open_price - self.port_value)
+                profit_percent = profit / self.port_value
+                self.port_value = 0
+                print(f"{cur_date}     {order.signal:<15} {profit:<10.2f} {profit_percent:<10.2%}")
+                print("--------------------")
             elif order.order_type == OrderType.exit_short:
-                self.close_short()
+                self.positions = 0
+                profit = (open_price - self.port_value) *  (-1)
+                profit_percent = profit / self.port_value
+                self.port_value = 0
+                print(f"{cur_date}     {order.signal:<15} {profit:<10.2f} {profit_percent:<10.2%}")
+                print("--------------------")
+                
+            
+            # recalculate order
+            self.place_order(
+                open_price=open_price,
+                high_price=high_price,
+                low_price=low_price,
+                close_price=close_price,
+            )
